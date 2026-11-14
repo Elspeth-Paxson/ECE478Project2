@@ -84,3 +84,40 @@ bar(bin_cats, c_prov, 'FaceColor', [0.95, 0.60, 0.80], 'EdgeColor', 'none');
 title('Provider Degree d^{(r)}_i');
 ylabel('Number of ASes');
 grid on;
+
+%% Part C: Now we get out lovely Graph 3 (CCDF of Global AS Degree on Log-Log Axes)
+d_pos = d_global(d_global >= 1); % k >= 1
+k_vals = sort(unique(d_pos));
+ccdf = zeros(size(k_vals));
+
+for i = 1:length(k_vals)
+    ccdf(i) = sum(d_pos >= k_vals(i)) / length(d_pos);
+end
+
+figure('Name', 'Graph 3: Global AS Degree CCDF');
+loglog(k_vals, ccdf, 'LineWidth', 2, 'Color', [0.85, 0.20, 0.55]);
+title('CCDF of Global AS Degree Pr(D \geq k)');
+xlabel('Global Degree k (log scale)');
+ylabel('Pr(D \geq k) (log scale)');
+grid on;
+
+% Summary statistics that we can use for our table in the project report
+mean_d   = mean(d_global);
+median_d = median(d_global);
+p95_d    = prctile(d_global, 95);
+max_d    = max(d_global);
+
+disp('--- Part C: Global Degree Statistics ---');
+disp(['Mean: ', num2str(mean_d)]);
+disp(['Median: ', num2str(median_d)]);
+disp(['95th Percentile: ', num2str(p95_d)]);
+disp(['Maximum: ', num2str(max_d)]);
+
+%% Part D last stop!: Top 10 Highest-Global-Degree ASes to make our table for part d!
+T_deg = table(all_AS, d_global, d_customer, d_peer, d_provider, ...
+    'VariableNames', {'AS', 'Global_d', 'Customer_dc', 'Peer_dp', 'Provider_dr'});
+
+T_sorted = sortrows(T_deg, 'Global_d', 'descend');
+
+disp('--- Part D: Top 10 Highest-Global-Degree ASes ---');
+disp(T_sorted(1:10, :));
