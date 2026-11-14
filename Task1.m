@@ -48,3 +48,55 @@ disp('Counts (Transit/Access, Content, Enterprise):');
 disp(counts_2021);
 disp('Percentages:');
 disp(percentage_2021);
+%% Part B: Graph 1 -> let's start setting up our pretty graphs
+labels = categorical({'Transit/Access', 'Content', 'Enterprise'});
+labels = reordercats(labels, {'Transit/Access', 'Content', 'Enterprise'});
+
+% Create custom tick positions and pretty x10^4 labels
+tick_vals = 0:10000:60000;
+tick_text = {'0', '1\times10^4', '2\times10^4', '3\times10^4', ...
+    '4\times10^4', '5\times10^4', '6\times10^4'};
+
+% Picking 3 pretty colors had to google a bit to find the colors I wanted
+bar_colors = [
+    0.93, 0.32, 0.62;  % Bright Berry Pink (Transit/Access)
+    0.48, 0.22, 0.78;  % Rich Violet Purple (Content)
+    0.55, 0.65, 0.98   % Soft Periwinkle (Enterprise)
+];
+
+% because we are pretty pretty girlies 💅
+
+figure; % let's get our figures going
+subplot(1, 2, 1);
+bar1 = bar(labels, counts_2015);
+bar1.FaceColor = 'flat';
+bar1.CData = bar_colors;
+bar1.EdgeColor = 'none'; % says it helps remove the harsh black outline for a softer look, why not
+title('2015 AS Categories');
+ylabel('Number of ASes');
+ylim([0 65000]);
+yticks(tick_vals);
+yticklabels(tick_text);
+grid on;
+
+subplot(1, 2, 2);
+bar2 = bar(labels, counts_2021);
+bar2.FaceColor = 'flat';
+bar2.CData = bar_colors;
+bar2.EdgeColor = 'none';
+title('2021 AS Categories');
+ylabel('Number of ASes');
+ylim([0 65000]);
+yticks(tick_vals);
+yticklabels(tick_text);
+grid on;
+
+%% Part C: Check those percentage differences and count differences!
+diff_counts = counts_2021 - counts_2015;
+diff_percentage = percentage_2021 - percentage_2015;
+
+disp('--- Change from 2015 to 2021 ---');
+disp('Count Change:');
+disp(diff_counts);
+disp('Percentage Share Change:');
+disp(diff_percentage);
