@@ -1,3 +1,4 @@
+%ECE478Project2
 %Task1 for Project2 baby!!
 clear;
 clc;
