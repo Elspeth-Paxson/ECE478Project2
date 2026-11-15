@@ -22,7 +22,7 @@ totColor  = [0.45 0.45 0.45];   % Total  - gray
 
 fig = figure('Units', 'inches', 'Position', [0.5 0.5 11 9], 'Color', 'w');
 tl  = tiledlayout(fig, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-title(tl, 'Graph 1: Class and Type AS Counts, 2015 vs 2021', ...
+title(tl, 'Graph 1a: AS counts by Source and Class, 2015 vs 2021', ...
       'FontSize', 16, 'FontWeight', 'bold');
 
 plotBars(nexttile(tl), c2015, '2015 (20150801.as2types.txt)', types, sources, srcColors, totColor);

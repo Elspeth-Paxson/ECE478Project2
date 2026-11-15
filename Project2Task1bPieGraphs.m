@@ -24,7 +24,7 @@ srcColors = [0.00 0.45 0.74;    % CAIDA  - blue
 
 fig = figure('Units', 'inches', 'Position', [0.5 0.5 11 14], 'Color', 'w');
 tl  = tiledlayout(fig, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-title(tl, 'Graph 2: Classes by Percentage, 2015 vs 2021', ...
+title(tl, 'Graph 1c: Share of Total by Source, 2015 vs 2021', ...
       'FontSize', 16, 'FontWeight', 'bold');
 
 plotPie(nexttile(tl), c2015, '2015 (20150801.as2types.txt)', types, sources, srcColors);
@@ -50,7 +50,7 @@ function plotPie(ax, c, yearLabel, types, sources, srcColors)
         for t = 1:3
             if c(s, t) == 0, continue; end % pie cannot draw zero slices
             vals(end+1) = c(s, t);                                       %#ok<AGROW>
-            lbls{end+1} = sprintf('%.3f%% of class\n%.3f%% of total', ...
+            lbls{end+1} = sprintf('%.3f%% of source\n%.3f%% of total', ...
                           100*c(s,t)/classTot(s), 100*c(s,t)/total);    %#ok<AGROW>
             names{end+1} = sprintf('%s - %s (%d)', sources{s}, types{t}, c(s,t)); %#ok<AGROW>
             cols(end+1, :) = 1 - shade(t) * (1 - srcColors(s, :));      %#ok<AGROW>
@@ -106,7 +106,7 @@ function plotPie(ax, c, yearLabel, types, sources, srcColors)
     axis(ax, 'equal');
     axis(ax, [-2.1 2.1 -1.55 1.55]);
     axis(ax, 'off');
-    title(ax, sprintf('%s - By Source and Type (Total ASes = %d)', yearLabel, total), ...
+    title(ax, sprintf('%s - By Source and Class (Total ASes = %d)', yearLabel, total), ...
           'Interpreter', 'none');
     legend(ax, patches, names, 'Location', 'eastoutside', 'Interpreter', 'none', 'FontSize', 9);
 end
