@@ -1,5 +1,5 @@
 %ECE478 Project2
-%Task4 for Project2 baby!!
+%Task2 for Project2 baby!!
 clear;
 clc;
 close all;
@@ -125,3 +125,12 @@ disp(matchedASNs(idxEx2(1:min(5, end))));
 disp('Sample Transit/Access ASes with Stub/Multi-homed role:');
 idxEx3 = find(matchedBus == "Transit/Access" & matchedStruct == "Stub/Multi-homed");
 disp(matchedASNs(idxEx3(1:min(5, end))));
+
+%%  Get some values me hoy
+
+for asn = [714, 33, 9]
+    idx = find(allASNs == asn);
+    provDeg = sum(data.AS2 == asn & data.Rel == -1);
+    fprintf('AS%d -> Providers: %d, Peers: %d, Customers: %d\n', asn, provDeg, peerDeg(idx), custDeg(idx));
+end
+
