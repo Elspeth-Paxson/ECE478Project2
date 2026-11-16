@@ -5,10 +5,30 @@ clc;
 close all;
 format long g; % no scientific notation!
 
-%% Part A Let's Go:  Load the relationship dataset
+%% Part A Let's Go: Load & clean the relationship dataset
 % Format: AS1 | AS2 | relationship (-1 = p2c, 0 = p2p) | source
-data = readtable('20241101.as-rel2.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
-data.Properties.VariableNames = {'AS1', 'AS2', 'Rel', 'Source'};
+rawRel = readtable('20241101.as-rel2.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
+rawRel.Properties.VariableNames = {'AS1', 'AS2', 'Rel', 'Source'};
+
+% Clean out any malformed rows & self-links (Rules 1 & 3)
+validRows = ~isnan(rawRel.AS1) & ~isnan(rawRel.AS2) & ismember(rawRel.Rel, [-1, 0]);
+rawRel = rawRel(validRows, :);
+
+selfLinks = (rawRel.AS1 == rawRel.AS2);
+fprintf('Excluded self-links: %d\n', sum(selfLinks));
+rawRel = rawRel(~selfLinks, :);
+
+% Deduplicate ignoring Source column (Rule 2)
+% Normalize p2p order so (A,B,0) and (B,A,0) count as the same link
+p2pMask = (rawRel.Rel == 0);
+minAS = min(rawRel.AS1(p2pMask), rawRel.AS2(p2pMask));
+maxAS = max(rawRel.AS1(p2pMask), rawRel.AS2(p2pMask));
+rawRel.AS1(p2pMask) = minAS;
+rawRel.AS2(p2pMask) = maxAS;
+
+[~, uniqueIdx] = unique(rawRel(:, {'AS1', 'AS2', 'Rel'}), 'rows', 'stable');
+fprintf('Excluded duplicate link records: %d\n', height(rawRel) - length(uniqueIdx));
+data = rawRel(uniqueIdx, :);
 
 % Get all unique ASes in the 2024 graph
 allASNs = unique([data.AS1; data.AS2]);
@@ -44,11 +64,17 @@ for i = 1:numAS
     end
 end
 
-%% 2. Load the classification dataset (2021 file confirmed!)
+%% 2. Load & clean the classification dataset (2021 file confirmed!)
 % Format: ASN | Source | BusinessType
 typesData = readtable('20210401.as2types.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
 typesData.Properties.VariableNames = {'ASN', 'Source', 'Type'};
 typesData.Type = strtrim(string(typesData.Type));
+
+% Clean out any malformed or duplicate ASN rows
+typesData = typesData(~isnan(typesData.ASN) & strlength(typesData.Type) > 0, :);
+[~, uniqueTypeIdx] = unique(typesData.ASN, 'stable');
+fprintf('Excluded duplicate classification records: %d\n\n', height(typesData) - length(uniqueTypeIdx));
+typesData = typesData(uniqueTypeIdx, :);
 
 %% 3. Part A: Match ASes and build 3x3 contingency table
 [matchedASNs, idxRel, idxType] = intersect(allASNs, typesData.ASN);
@@ -75,6 +101,9 @@ for r = 1:3
         table3x3(r, c) = sum(matchedBus == bNames(r) & matchedStruct == sNames(c));
     end
 end
+
+% Sanity check to make sure every matched AS landed in the 3x3 table
+assert(sum(table3x3(:)) == length(matchedASNs), 'Warning: Some ASes did not match bNames or sNames!');
 
 T = array2table(table3x3, 'RowNames', bNames, 'VariableNames', sNames);
 disp('3x3 Contingency Table:');
@@ -130,14 +159,15 @@ disp('Sample Transit/Access ASes with Stub/Multi-homed role:');
 idxEx3 = find(matchedBus == "Transit/Access" & matchedStruct == "Stub/Multi-homed");
 disp(matchedASNs(idxEx3(1:min(5, end))));
 
-%%  Get some values me hoy
+%% Get exact degree counts for 3 fresh 2021+2024 examples! So we can use them ine xamples!
+freshExamples = [matchedASNs(idxEx1(1)), matchedASNs(idxEx2(1)), matchedASNs(idxEx3(1))];
 
-for asn = [714, 33, 9]
+for asn = freshExamples(:)'
     idx = find(allASNs == asn);
-    if ~isempty(idx)
-        provDeg = sum(data.AS2 == asn & data.Rel == -1);
-        busType = typesData.Type(typesData.ASN == asn);
-        fprintf('AS%d (%s) -> Providers: %d, Peers: %d, Customers: %d\n', ...
-            asn, busType, provDeg, peerDeg(idx), custDeg(idx));
-    end
+    provDeg = sum(data.AS2 == asn & data.Rel == -1);
+    busType = typesData.Type(typesData.ASN == asn);
+    fprintf('AS%d | 2021 Class: %s | 2024 Role: %s -> Providers: %d, Peers: %d, Customers: %d\n', ...
+        asn, busType, structRole(idx), provDeg, peerDeg(idx), custDeg(idx));
 end
+
+
