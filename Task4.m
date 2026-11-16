@@ -1,8 +1,9 @@
 %ECE478 Project2
-%Task2 for Project2 baby!!
+%Task4 for Project2 baby!!
 clear;
 clc;
 close all;
+format long g; % no scientific notation!
 
 %% Part A Let's Go:  Load the relationship dataset
 % Format: AS1 | AS2 | relationship (-1 = p2c, 0 = p2p) | source
@@ -43,11 +44,11 @@ for i = 1:numAS
     end
 end
 
-%% 2. Load the classification dataset
+%% 2. Load the classification dataset (2021 file confirmed!)
 % Format: ASN | Source | BusinessType
-typesData = readtable('20150801.as2types.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
+typesData = readtable('20210401.as2types.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
 typesData.Properties.VariableNames = {'ASN', 'Source', 'Type'};
-typesData.Type = string(typesData.Type);
+typesData.Type = strtrim(string(typesData.Type));
 
 %% 3. Part A: Match ASes and build 3x3 contingency table
 [matchedASNs, idxRel, idxType] = intersect(allASNs, typesData.ASN);
@@ -96,17 +97,20 @@ for i = 1:3
     yPos = 0;
     for j = 1:3
         val = pctMatrix(i, j);
-        text(i, yPos + val/2, sprintf('%.1f%%', val), ...
-            'HorizontalAlignment', 'center', ...
-            'Color', 'w', 'FontWeight', 'bold', 'FontSize', 10);
+        if val > 3
+            text(i, yPos + val/2, sprintf('%.1f%%', val), ...
+                'HorizontalAlignment', 'center', ...
+                'Color', 'w', 'FontWeight', 'bold', 'FontSize', 10);
+        end
         yPos = yPos + val;
     end
 end
 
+xticks([1 2 3]);
 xticklabels(bNames);
 xlabel('Business Classification', 'FontWeight', 'bold');
 ylabel('Percentage of ASes (%)', 'FontWeight', 'bold');
-title('Graph 5: Structural Roles by Business Class');
+title(['Graph 5: Structural Roles by Business Class (N = ', num2str(length(matchedASNs)), ')']);
 legend(sNames, 'Location', 'eastoutside');
 ylim([0 100]);
 grid on;
@@ -130,7 +134,10 @@ disp(matchedASNs(idxEx3(1:min(5, end))));
 
 for asn = [714, 33, 9]
     idx = find(allASNs == asn);
-    provDeg = sum(data.AS2 == asn & data.Rel == -1);
-    fprintf('AS%d -> Providers: %d, Peers: %d, Customers: %d\n', asn, provDeg, peerDeg(idx), custDeg(idx));
+    if ~isempty(idx)
+        provDeg = sum(data.AS2 == asn & data.Rel == -1);
+        busType = typesData.Type(typesData.ASN == asn);
+        fprintf('AS%d (%s) -> Providers: %d, Peers: %d, Customers: %d\n', ...
+            asn, busType, provDeg, peerDeg(idx), custDeg(idx));
+    end
 end
-
