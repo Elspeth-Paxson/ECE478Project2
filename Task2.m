@@ -3,14 +3,14 @@
 clear;
 clc;
 close all;
-format long g; % no more scientific notation bestie!!
+format long g; % no more scientific notation baybay!!
 
 %% 1. Load the relationship dataset
 % Format: AS1 | AS2 | relationship (-1 = p2c, 0 = p2p) | source
 data = readtable('20241101.as-rel2.txt', 'Delimiter', '|', 'CommentStyle', '#', 'ReadVariableNames', false);
 data.Properties.VariableNames = {'AS1', 'AS2', 'Rel', 'Source'};
 
-% Quick rule-check cleanup so the grader is happy (drop bad rows, self-links, and dupes)
+% Quick rule-check cleanup (drop them bad rows, self-links, and dupes)
 raw_rows = height(data);
 data = data(~isnan(data.AS1) & ~isnan(data.AS2) & ismember(data.Rel, [-1, 0]), :);
 malformed_dropped = raw_rows - height(data);
@@ -126,7 +126,8 @@ xlabel('Global Degree k (log scale)');
 ylabel('Pr(D \geq k) (log scale)');
 grid on;
 
-% Summary statistics that we can use for our table in the project report
+% Summary statistics that we can use for our table in the project report!
+% Let's make this table!
 mean_d   = mean(d_global);
 median_d = median(d_global);
 p95_d    = prctile(d_global, 95);
@@ -138,7 +139,7 @@ disp(['Median: ', num2str(median_d)]);
 disp(['95th Percentile: ', num2str(p95_d)]);
 disp(['Maximum: ', num2str(max_d)]);
 
-%% Part D last stop!: Top 10 Highest-Global-Degree ASes to make our table for part d!
+%% Part D last stop, lol!: Top 10 Highest-Global-Degree ASes to make that table, yessirreee
 T_deg = table(all_AS, d_global, d_customer, d_peer, d_provider, ...
     'VariableNames', {'AS', 'Global_d', 'Customer_dc', 'Peer_dp', 'Provider_dr'});
 
